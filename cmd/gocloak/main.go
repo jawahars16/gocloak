@@ -2,6 +2,7 @@ package main
 
 import (
 	"fmt"
+	"log/slog"
 	"net/http"
 
 	"github.com/gorilla/mux"
@@ -14,10 +15,18 @@ import (
 
 func main() {
 	cfg := config.Load()
+
 	db, err := db.New(cfg.DB)
 	if err != nil {
 		panic(fmt.Sprintf("Error connecting to DB: %v", err))
 	}
+	slog.Info("DB connection successful")
+
+	err = db.Migrate()
+	if err != nil {
+		panic(fmt.Sprintf("Error running migrations: %v", err))
+	}
+	slog.Info("Migrations successful")
 
 	crypto := auth.NewCrypto()
 	tokenGenerator := token.NewGenerator()
